@@ -1,0 +1,62 @@
+Version 0.6.0
+- Fixed a huge issue that caused performance to drop alot. Game feels now much smoother again.
+- Pickable objects can finally be thrown around.
+- Menu can now be used from VR.
+- Added a laser pointer to the right hand that is used to navigate pause menu and also ordering food from PSK. 
+- Made sauna ladle usable in VR (trigger picks up water and water is thrown by doing the right click related action)
+- Made spray canisters usable in VR.
+- Things like catalog and other papers appear now on the left hand and can be interacted with the laser pointer.
+- Attached the wristwatch permanently to the left hand.
+
+As before this update will likely bring new bugs. I will try to fix them when i can.
+
+Version 0.5.0
+- You can now rebind VR controls in SteamVR settings
+- Added fueling in VR
+- Seatbelts can now be used with VR hands
+- Sprint is now a toggle, so you can click once to sprint and click again to stop sprinting
+- You can now recenter the view with a controller button in addition to the keyboard recenter key
+Fixed
+- Being drunk now correctly changes the VR view as it does in the game, including the wobbly fisheye effect
+- The right-hand punch pose now works for breaking glass and hitting people
+- MiddleFinger hand pose works as well
+- Grabbing, picking up, and dropping objects is more reliable during normal gameplay
+- The HUD is now on the underside of your left arm so stats are easier to check in VR
+
+- Grabbing for some reason doesn't work unless you left click atleast once in game using the mouse.
+- Likely includes lots of bugs caused by the new interaction system. Report bugs on the mod page so i can try to fix them
+
+Version 0.4.0
+- Car Assembly now possible!
+- By holding a part near it's install location and pressing trigger it attatches the part to that location
+- Tightening and untightening bolts and screws now possible (go read description or readme for info how to do it)
+- Implemented "Punch" and "Middlefinger" hand model toggles for right hand (not currently doing anything)
+- Fixed some camera isuues and added some camera functions
+- Added autostart feature into the settings (Default is off)
+- Lots of other things i dont remember to mention
+
+V0.3.0
+- Hands now have proper models (Copied from game's hands push model)
+- Interacting with most objects
+
+V0.2.1
+- Interaction using VR Controllers
+
+V0.2.0
+- VR Controller Tracking ("Hands")
+- Object Interaction
+- 6DOF Head Tracking
+- VR Locomotion
+- Controller Button Bindings
+
+V0.1.2
+- Fixed bug that made looking around very laggy. 
+- Mod now actually usable 
+
+V0.1.1
+- Fixed Radio volume and parking brake toggle keybinds not working
+
+V0.1.0: Initial release
+- Basic VR rendering via SteamVR compositor
+- Head tracking / look around support
+- Custom keybinds

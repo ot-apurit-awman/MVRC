@@ -1,0 +1,173 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="Local.props" Condition="Exists('Local.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <MVRC_GAME_REFS Condition=" '$(MVRC_GAME_REFS)' == '' ">$(MSBuildProjectDirectory)\GameRefs</MVRC_GAME_REFS>
+    <ProjectGuid>{F9464FA2-B996-C04D-1072-2318B7E4A33C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MyWinterCarVR</RootNamespace>
+    <AssemblyName>MVRC</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;MVRC_DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net35" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>$(MVRC_GAME_REFS)\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MSCLoader">
+      <HintPath>$(MVRC_GAME_REFS)\MSCLoader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(MVRC_GAME_REFS)\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>$(MVRC_GAME_REFS)\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="cInput">
+      <HintPath>$(MVRC_GAME_REFS)\cInput.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PlayMaker">
+      <HintPath>$(MVRC_GAME_REFS)\PlayMaker.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(MVRC_GAME_REFS)\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(MVRC_GAME_REFS)\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="MVRC.cs" />
+    <Compile Include="LookManager.cs" />
+    <Compile Include="VRManager.cs" />
+    <Compile Include="VRCompositorManager.cs" />
+    <Compile Include="HMDLook.cs" />
+    <Compile Include="openvr_api.cs" />
+    <Compile Include="VRHands.cs" />
+    <Compile Include="PlayMakerHelpers.cs" />
+    <Compile Include="FsmRuntimePatchHook.cs" />
+    <Compile Include="VRInteraction.cs" />
+    <Compile Include="FsmPatcher.cs" />
+    <Compile Include="FsmActions.cs" />
+    <Compile Include="DebugControllerEmulation.cs" />
+    <Compile Include="VRHandPickupProximityAction.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VRDebugEyeView.cs" />
+    <Compile Include="LaserPointer.cs" />
+    <Compile Include="ReparentManager.cs" />
+    <Compile Include="ObjectResolver.cs" />
+    <Compile Include="VRMenuManager.cs" />
+    <Compile Include="VRMenuAnchor.cs" />
+  </ItemGroup>
+  <ItemGroup>
+  	<EmbeddedResource Include="actions.json" />
+  	<EmbeddedResource Include="bindings_oculus_touch.json" />
+  <EmbeddedResource Include="bindings_vive.json" />
+  <EmbeddedResource Include="bindings_knuckles.json" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+  <MSCMODSFOLDER>NONE</MSCMODSFOLDER>
+  <MWCMODSFOLDER>NONE</MWCMODSFOLDER>
+    <ABFOLDER>NONE</ABFOLDER>
+    <PostBuildEvent>
+		echo .
+		echo "== Running post build actions for configuration $(ConfigurationName)! ==="
+
+      IF "$(ConfigurationName)" == "Release" (
+      IF NOT "$(MSCMODSFOLDER)" == "NONE" (
+      copy "$(TargetPath)" "$(MSCMODSFOLDER)" /y
+      echo  "Copied dll into MSC mods folder!"        
+      IF EXIST "$(SolutionDir)MVRC_Native\x64\Release\MVRC_Native.dll" (
+      copy "$(SolutionDir)MVRC_Native\x64\Release\MVRC_Native.dll" "$(MSCMODSFOLDER)" /y
+      echo  "Copied MVRC_Native.dll into MSC mods folder!"
+      )
+      )
+      IF NOT "$(MWCMODSFOLDER)" == "NONE" (
+      copy "$(TargetPath)" "$(MWCMODSFOLDER)" /y
+      echo  "Copied dll into MWC mods folder!"        
+      IF EXIST "$(SolutionDir)MVRC_Native\x64\Release\MVRC_Native.dll" (
+      copy "$(SolutionDir)MVRC_Native\x64\Release\MVRC_Native.dll" "$(MWCMODSFOLDER)" /y
+      echo  "Copied MVRC_Native.dll into MWC mods folder!"
+      )
+      )
+      )
+      IF "$(ConfigurationName)" == "Debug" (
+      IF NOT "$(MSCMODSFOLDER)" == "NONE" (        
+      copy "$(TargetPath)" "$(MSCMODSFOLDER)" /y
+      copy "$(TargetDir)$(TargetName).pdb" "$(MSCMODSFOLDER)" /y
+      echo  "Copied pdb file into mods folder!"
+      IF EXIST "$(SolutionDir)MVRC_Native\x64\Release\MVRC_Native.dll" (
+      copy "$(SolutionDir)MVRC_Native\x64\Release\MVRC_Native.dll" "$(MSCMODSFOLDER)" /y
+      echo  "Copied MVRC_Native.dll into MSC mods folder!"
+      )
+      cd "$(MSCMODSFOLDER)"
+      IF exist "$(MSCMODSFOLDER)\debug.bat" (
+      call "$(MSCMODSFOLDER)\debug.bat"
+      ) ELSE (
+      echo "debug.bat not found in "$(MSCMODSFOLDER)". You probably dont have MSCLoader debugging enabled!"
+      )
+      )
+      IF NOT "$(MWCMODSFOLDER)" == "NONE" (        
+      copy "$(TargetPath)" "$(MWCMODSFOLDER)" /y
+      copy "$(TargetDir)$(TargetName).pdb" "$(MWCMODSFOLDER)" /y
+      echo  "Copied pdb file into mods folder!"
+      IF EXIST "$(SolutionDir)MVRC_Native\x64\Release\MVRC_Native.dll" (
+      copy "$(SolutionDir)MVRC_Native\x64\Release\MVRC_Native.dll" "$(MWCMODSFOLDER)" /y
+      echo  "Copied MVRC_Native.dll into MWC mods folder!"
+      )
+      cd "$(MWCMODSFOLDER)"
+      IF exist "$(MWCMODSFOLDER)\debug.bat" (
+      call "$(MWCMODSFOLDER)\debug.bat"
+      ) ELSE (
+      echo "debug.bat not found in "$(MWCMODSFOLDER)". You probably dont have MSCLoader debugging enabled!"
+      )
+      )      
+      )
+
+      echo "=== Done! ==="
+    </PostBuildEvent>
+  </PropertyGroup>
+
+
+</Project>

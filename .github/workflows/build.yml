@@ -1,0 +1,260 @@
+name: Build and attach DLL to Release
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]    # runs when a release is published
+  workflow_dispatch:      # manual trigger; builds DLLs only, no zip
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check tracked proprietary files
+        shell: pwsh
+        run: |
+          $forbiddenNames = '(?i)(^|[\\/])(Assembly-CSharp(?:-firstpass)?|UnityEngine(?:\.UI)?|PlayMaker|MSCLoader|0Harmony|mscorlib|System[^\\/]*)\.dll$'
+          $tracked = @(git ls-files)
+          $violations = @($tracked | Where-Object {
+            (($_ -match '(?i)\.dll$') -and ($_ -notmatch '(?i)(^|[\\/])openvr_api\.dll$')) -or
+            ($_ -match '(?i)(^|[\\/])GameRefs([\\/]|$)') -or
+            ($_ -match $forbiddenNames)
+          })
+          if ($violations) {
+            $violations | ForEach-Object { Write-Error "Tracked proprietary file: $_" }
+            exit 1
+          }
+      - name: Check release surface
+        shell: pwsh
+        run: |
+          $forbidden = Get-ChildItem -Recurse -File -Force | Where-Object {
+            $_.FullName -notmatch '\\.git\\' -and $_.FullName -notmatch '\\GameRefs\\' -and
+            $_.Extension.ToLowerInvariant() -in @('.assetbundle', '.unity3d', '.fbx', '.obj', '.png', '.jpg', '.jpeg', '.wav', '.mp3', '.exe')
+          }
+          if ($forbidden) {
+            $forbidden | ForEach-Object { Write-Error "Forbidden release artifact: $($_.FullName)" }
+            exit 1
+          }
+          $privateDlls = Get-ChildItem -Path GameRefs -Recurse -File -Filter *.dll -ErrorAction SilentlyContinue
+          if ($privateDlls) {
+            $privateDlls | ForEach-Object { Write-Error "Private game reference must not be published: $($_.FullName)" }
+            exit 1
+          }
+          $sourceFiles = Get-ChildItem -Recurse -File -Filter *.cs | Where-Object { $_.FullName -notmatch '\\GameRefs\\' }
+          $modern = Select-String -Path $sourceFiles.FullName -Pattern '\bnameof\s*\(|string\.IsNullOrWhiteSpace' -SimpleMatch:$false
+          if ($modern) {
+            $modern | ForEach-Object { Write-Error "Non-.NET 3.5 syntax/API: $($_.Path):$($_.LineNumber)" }
+            exit 1
+          }
+          if (Test-Path .copilot-tracking) { Write-Error '.copilot-tracking must not be part of a public release'; exit 1 }
+
+  detect-references:
+    runs-on: windows-latest
+    outputs:
+      available: ${{ steps.refs.outputs.available }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check private references
+        id: refs
+        shell: pwsh
+        run: |
+          $required = @('Assembly-CSharp.dll', 'Assembly-CSharp-firstpass.dll', 'UnityEngine.dll', 'UnityEngine.UI.dll', 'PlayMaker.dll', 'MSCLoader.dll', 'cInput.dll', '0Harmony.dll')
+          $missing = $required | Where-Object { -not (Test-Path (Join-Path 'GameRefs' $_)) }
+          if ($missing) { Write-Host "Private references unavailable; build will be skipped."; "available=false" >> $env:GITHUB_OUTPUT }
+          else { "available=true" >> $env:GITHUB_OUTPUT }
+
+  build-and-upload:
+    needs: detect-references
+    if: github.event_name != 'pull_request' && needs.detect-references.outputs.available == 'true'
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup MSBuild for native OpenVR project
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Show top-level files & GameRefs
+        run: |
+          Write-Host "Top-level files:"
+          Get-ChildItem -Force -Name
+          Write-Host "GameRefs (if present):"
+          if (Test-Path GameRefs) { Get-ChildItem GameRefs -Recurse -Name } else { Write-Host "GameRefs missing" }
+        shell: pwsh
+
+      - name: Build MVRC_OpenVR.dll (x64)
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          msbuild MVRC_OpenVR\MVRC_OpenVR.sln `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /m
+        shell: pwsh
+
+      - name: Build managed MVRC project
+        run: |
+          $env:MVRC_GAME_REFS = (Resolve-Path GameRefs).Path
+          dotnet build MyWinterCarVR.csproj `
+            --configuration Release `
+            --nologo `
+            /p:Platform=AnyCPU `
+            /p:TargetFrameworkProfile="" `
+            /p:PostBuildEvent=""
+        shell: pwsh
+
+      - name: Find build outputs (bin\Release)
+        id: find_outputs
+        run: |
+          Write-Host "Searching for bin\\Release\\*.dll..."
+          $dlls = Get-ChildItem -Path . -Recurse -Filter *.dll | Where-Object { $_.FullName -match '\\bin\\Release\\' }
+          $pdbs = Get-ChildItem -Path . -Recurse -Filter *.pdb | Where-Object { $_.FullName -match '\\bin\\Release\\' }
+          if (($dlls.Count + $pdbs.Count) -eq 0) {
+            Write-Host "No DLLs/PDBs found under bin\\Release. Listing bin folders for debugging..."
+            Get-ChildItem -Path . -Recurse -Directory | Where-Object { $_.FullName -match '\\bin\\' } | Select-Object -First 200 | ForEach-Object { Write-Host $_.FullName }
+            exit 1
+          }
+          $all = @()
+          $dlls | ForEach-Object { $all += $_.FullName }
+          $pdbs | ForEach-Object { $all += $_.FullName }
+          $all | ForEach-Object { Write-Host "Found: $_" }
+          $joined = $all -join ';'
+          echo "::set-output name=paths::$joined"
+        shell: pwsh
+
+      # Always stage the two built DLLs.
+      - name: Stage built DLLs
+        run: |
+          New-Item -ItemType Directory -Force -Path staging | Out-Null
+
+          $dll = Get-ChildItem -Path . -Recurse -Filter "MVRC.dll" |
+                   Where-Object { $_.FullName -match '\\bin\\Release\\' } |
+                   Select-Object -First 1
+          if (-not $dll) {
+            Write-Error "MVRC.dll not found under bin\Release"
+            exit 1
+          }
+          Write-Host "Found: $($dll.FullName)"
+          Copy-Item $dll.FullName -Destination staging\MVRC.dll
+
+          $nativeDll = Get-ChildItem -Path MVRC_OpenVR -Recurse -Filter "MVRC_OpenVR.dll" |
+                         Select-Object -First 1
+          if ($nativeDll) {
+            Write-Host "Found native: $($nativeDll.FullName)"
+            Copy-Item $nativeDll.FullName -Destination staging\MVRC_OpenVR.dll
+          } else {
+            Write-Warning "MVRC_OpenVR.dll not found; skipping"
+          }
+        shell: pwsh
+
+      # For releases only, stage extra files and create the three zip archives.
+      - name: Stage release extras and create zips
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          # Copy optional extra files into staging, noting which ones exist
+          $extras = @("README.txt", "CHANGELOG.txt", "THIRD_PARTY_LICENSES.md", "openvr_api.dll")
+          foreach ($file in $extras) {
+            if (Test-Path $file) {
+              Write-Host "Staging $file"
+              Copy-Item $file -Destination staging\$file
+            } else {
+              Write-Warning "$file not found in repo root; skipping (won't fail the build)"
+            }
+          }
+
+          # Zip 1: MVRC_Full.zip.
+          # Everything: both DLLs, openvr_api.dll, README, CHANGELOG, THIRD_PARTY_LICENSES
+          $fullFiles = @(
+            "staging\MVRC.dll",
+            "staging\MVRC_OpenVR.dll",
+            "staging\openvr_api.dll",
+            "staging\README.txt",
+            "staging\CHANGELOG.txt",
+            "staging\THIRD_PARTY_LICENSES.md"
+          ) | Where-Object { Test-Path $_ }
+
+          Write-Host "`nMVRC_Full.zip contents:"
+          $fullFiles | ForEach-Object { Write-Host "  $_" }
+          Compress-Archive -Path $fullFiles -DestinationPath staging\MVRC_Full.zip -Force
+
+          # Zip 2: MVRC_Mod.zip.
+          # Just the mod itself: MVRC.dll + README + CHANGELOG
+          # For people who already have the OpenVR runtime installed
+          $modFiles = @(
+            "staging\MVRC.dll",
+            "staging\README.txt",
+            "staging\CHANGELOG.txt"
+          ) | Where-Object { Test-Path $_ }
+
+          Write-Host "`nMVRC_Mod.zip contents:"
+          $modFiles | ForEach-Object { Write-Host "  $_" }
+          Compress-Archive -Path $modFiles -DestinationPath staging\MVRC_Mod.zip -Force
+
+          # Zip 3: MVRC_OpenVR_Runtime.zip.
+          # Runtime files only: MVRC_OpenVR.dll + openvr_api.dll + license
+          # For people who need to update just the native/OpenVR side
+          $runtimeFiles = @(
+            "staging\MVRC_OpenVR.dll",
+            "staging\openvr_api.dll",
+            "staging\THIRD_PARTY_LICENSES.md"
+          ) | Where-Object { Test-Path $_ }
+
+          Write-Host "`nMVRC_OpenVR_Runtime.zip contents:"
+          $runtimeFiles | ForEach-Object { Write-Host "  $_" }
+          Compress-Archive -Path $runtimeFiles -DestinationPath staging\MVRC_OpenVR_Runtime.zip -Force
+        shell: pwsh
+
+      - name: Upload release zips as an artifact
+        if: ${{ github.event_name == 'release' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: MVRC-release-zips
+          path: |
+            staging/MVRC_Full.zip
+            staging/MVRC_Mod.zip
+            staging/MVRC_OpenVR_Runtime.zip
+
+      # ── Always: upload raw DLLs as an artifact for manual test runs ─────────
+      - name: Upload build artifact (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyWinterCarVR-build
+          path: |
+            **\bin\Release\*.dll
+            **\bin\Release\*.pdb
+
+  release-upload:
+    needs: build-and-upload
+    if: github.event_name == 'release'
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download release zips
+        uses: actions/download-artifact@v4
+        with:
+          name: MVRC-release-zips
+          path: staging
+      - name: Upload zips to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            staging/MVRC_Full.zip
+            staging/MVRC_Mod.zip
+            staging/MVRC_OpenVR_Runtime.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

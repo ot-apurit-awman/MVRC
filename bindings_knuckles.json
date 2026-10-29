@@ -1,0 +1,148 @@
+{
+  "controller_type": "knuckles",
+  "bindings": {
+    "/actions/mvrc": {
+      "sources": [
+        {
+          "path": "/user/hand/right/input/trigger",
+          "mode": "button",
+          "inputs": { "click": { "output": "/actions/mvrc/in/interact_right" } }
+        },
+        {
+          "path": "/user/hand/left/input/trigger",
+          "mode": "button",
+          "inputs": { "click": { "output": "/actions/mvrc/in/interact_left" } }
+        },
+        {
+          "path": "/user/hand/right/input/squeeze",
+          "mode": "button",
+          "inputs": { "click": { "output": "/actions/mvrc/in/grab_right" } }
+        },
+        {
+          "path": "/user/hand/left/input/squeeze",
+          "mode": "button",
+          "inputs": { "click": { "output": "/actions/mvrc/in/grab_left" } }
+        },
+        {
+          "path": "/user/hand/right/input/a",
+          "mode": "button",
+          "inputs": { "click": { "output": "/actions/mvrc/in/jump" } }
+        },
+        {
+          "path": "/user/hand/right/input/b",
+          "mode": "button",
+          "inputs": { "click": { "output": "/actions/mvrc/in/b_held" } }
+        },
+        {
+          "path": "/user/hand/left/input/a",
+          "mode": "button",
+          "inputs": { "click": { "output": "/actions/mvrc/in/tool_mode" } }
+        },
+        {
+          "path": "/user/hand/right/input/joystick",
+          "mode": "joystick",
+          "inputs": { "position": { "output": "/actions/mvrc/in/turn" } }
+        },
+        {
+          "path": "/user/hand/right/input/joystick",
+          "mode": "button",
+          "inputs": { "click": { "output": "/actions/mvrc/in/crouch" } }
+        },
+        {
+          "path": "/user/hand/left/input/joystick",
+          "mode": "joystick",
+          "inputs": { "position": { "output": "/actions/mvrc/in/move" } }
+        },
+        {
+          "path": "/user/hand/left/input/joystick",
+          "mode": "button",
+          "inputs": { "click": { "output": "/actions/mvrc/in/sprint" } }
+        }
+      ]
+    },
+    "/actions/mvrc_b": {
+      "chords": [
+        {
+          "output": "/actions/mvrc_b/in/finger",
+          "inputs": [
+            [ "/user/hand/right/input/a", "single" ],
+            [ "/user/hand/right/input/trigger", "single" ]
+          ]
+        },
+        {
+          "output": "/actions/mvrc_b/in/fist",
+          "inputs": [
+            [ "/user/hand/right/input/a", "single" ],
+            [ "/user/hand/right/input/trigger", "single" ],
+            [ "/user/hand/right/input/squeeze", "single" ]
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "path": "/user/hand/right/input/b",
+          "mode": "button",
+          "inputs": {
+            "click": { "output": "/actions/mvrc_b/in/b_held" }
+          }
+        },
+        {
+          "path": "/user/hand/right/input/trigger",
+          "mode": "button",
+          "inputs": {
+            "click": { "output": "/actions/mvrc_b/in/right_click_right" }
+          }
+        },
+        {
+          "path": "/user/hand/left/input/trigger",
+          "mode": "button",
+          "inputs": {
+            "click": { "output": "/actions/mvrc_b/in/right_click_left" }
+          }
+        },
+        {
+          "path": "/user/hand/right/input/a",
+          "mode": "button",
+          "inputs": {
+            "click": { "output": "/actions/mvrc_b/in/menu" }
+          }
+        },
+        {
+          "path": "/user/hand/right/input/squeeze",
+          "mode": "button",
+          "inputs": {
+            "click": { "output": "/actions/mvrc_b/in/laser_right" }
+          }
+        },
+        {
+          "path": "/user/hand/left/input/squeeze",
+          "mode": "button",
+          "inputs": {
+            "click": { "output": "/actions/mvrc_b/in/laser_left" }
+          }
+        },
+        {
+          "path": "/user/hand/left/input/b",
+          "mode": "button",
+          "inputs": {
+            "click": { "output": "/actions/mvrc_b/in/drive_mode" }
+          }
+        },
+        {
+          "path": "/user/hand/left/input/trackpad",
+          "mode": "trackpad",
+          "inputs": {
+            "click": { "output": "/actions/mvrc_b/in/ratchet_toggle" }
+          }
+        },
+        {
+          "path": "/user/hand/left/input/trackpad",
+          "mode": "trackpad",
+          "inputs": {
+            "click": { "output": "/actions/mvrc_b/in/recenter" }
+          }
+        }
+      ]
+    }
+  }
+}

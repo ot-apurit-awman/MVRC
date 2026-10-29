@@ -1,0 +1,13 @@
+MVRC (My Winter Car VR)
+Copyright (C) 2026 ot-apurit-awman
+
+This project is distributed under the GNU General Public License, version 3
+or any later version. See LICENSE.
+
+This repository does not include My Winter Car, Unity, PlayMaker, MSCLoader, or
+any proprietary game assets or assemblies. Those works remain the property of
+their respective owners and must be obtained and used according to their own
+licenses and terms.
+
+The OpenVR API source and runtime components are provided by Valve Corporation
+under the BSD-3-Clause license. See THIRD_PARTY_LICENSES.md.

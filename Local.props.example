@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <MVRC_GAME_REFS>C:\path\to\My Winter Car\mywintercar_Data\Managed</MVRC_GAME_REFS>
+  </PropertyGroup>
+</Project>

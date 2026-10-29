@@ -1,0 +1,46 @@
+name: DCO
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dco:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check commit sign-offs
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Require Signed-off-by trailers
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -eu
+          commits=$(git rev-list "$BASE_SHA..$HEAD_SHA")
+          if [ -z "$commits" ]; then
+            echo "No commits found in pull request range."
+            exit 1
+          fi
+          failed=0
+          for commit in $commits; do
+            author=$(git show -s --format='%an' "$commit")
+            email=$(git show -s --format='%ae' "$commit")
+            expected="Signed-off-by: $author <$email>"
+            if ! git show -s --format=%B "$commit" | grep -Fqx "$expected"; then
+              echo "DCO failure: $commit was authored by $author <$email> but does not contain the exact trailer:"
+              echo "  $expected"
+              failed=1
+            else
+              echo "DCO OK: $commit ($author <$email>)"
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "Every commit in this pull request, including merge commits, must have a matching Signed-off-by trailer."
+          fi
+          exit "$failed"

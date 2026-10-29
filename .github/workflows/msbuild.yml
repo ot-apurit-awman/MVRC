@@ -1,0 +1,76 @@
+name: Build Debug DLL
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-tracked-files:
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check tracked proprietary files
+        shell: pwsh
+        run: |
+          $forbiddenNames = '(?i)(^|[\\/])(Assembly-CSharp(?:-firstpass)?|UnityEngine(?:\.UI)?|PlayMaker|MSCLoader|0Harmony|mscorlib|System[^\\/]*)\.dll$'
+          $tracked = @(git ls-files)
+          $violations = @($tracked | Where-Object {
+            (($_ -match '(?i)\.dll$') -and ($_ -notmatch '(?i)(^|[\\/])openvr_api\.dll$')) -or
+            ($_ -match '(?i)(^|[\\/])GameRefs([\\/]|$)') -or
+            ($_ -match $forbiddenNames)
+          })
+          if ($violations) {
+            $violations | ForEach-Object { Write-Error "Tracked proprietary file: $_" }
+            exit 1
+          }
+
+  detect-references:
+    runs-on: windows-latest
+    outputs:
+      available: ${{ steps.refs.outputs.available }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check private references
+        id: refs
+        shell: pwsh
+        run: |
+          $required = @('Assembly-CSharp.dll', 'Assembly-CSharp-firstpass.dll', 'UnityEngine.dll', 'UnityEngine.UI.dll', 'PlayMaker.dll', 'MSCLoader.dll', 'cInput.dll', '0Harmony.dll')
+          $missing = $required | Where-Object { -not (Test-Path (Join-Path 'GameRefs' $_)) }
+          if ($missing) {
+            Write-Host "Private references unavailable; build will be skipped."
+            "available=false" >> $env:GITHUB_OUTPUT
+          } else {
+            "available=true" >> $env:GITHUB_OUTPUT
+          }
+
+  build-debug:
+    needs: detect-references
+    if: needs.detect-references.outputs.available == 'true'
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Build Debug DLL
+        shell: pwsh
+        run: |
+          $env:MVRC_GAME_REFS = (Resolve-Path GameRefs).Path
+          dotnet build MyWinterCarVR.csproj `
+            --configuration Debug `
+            --nologo `
+            /p:Platform=AnyCPU `
+            /p:TargetFrameworkProfile="" `
+            /p:PostBuildEvent=""
+      - name: Upload debug build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MVRC-Debug-Build
+          path: |
+            **\bin\Debug\*.dll
+            **\bin\Debug\*.pdb
+          if-no-files-found: error

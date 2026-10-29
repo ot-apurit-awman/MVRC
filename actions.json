@@ -1,0 +1,193 @@
+{
+  "default_bindings": [
+    {
+      "controller_type": "oculus_touch",
+      "binding_url": "bindings_oculus_touch.json"
+    },
+    {
+      "controller_type": "oculus_touch_plus",
+      "binding_url": "bindings_oculus_touch.json"
+    },
+    {
+      "controller_type": "vive_controller",
+      "binding_url": "bindings_vive.json"
+    },
+    {
+      "controller_type": "knuckles",
+      "binding_url": "bindings_knuckles.json"
+    },
+    {
+      "controller_type": "generic",
+      "binding_url": "bindings_generic.json"
+    }
+  ],
+  "actions": [
+    {
+      "name": "/actions/mvrc/in/interact_right",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc/in/interact_left",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc/in/grab_right",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc/in/grab_left",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc/in/jump",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc/in/crouch",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc/in/sprint",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc/in/tool_mode",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc/in/b_held",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc/in/turn",
+      "requirement": "mandatory",
+      "type": "vector2"
+    },
+    {
+      "name": "/actions/mvrc/in/move",
+      "requirement": "mandatory",
+      "type": "vector2"
+    },
+    {
+      "name": "/actions/mvrc_b/in/b_held",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/menu",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/right_click_right",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/right_click_left",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/laser_right",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/laser_left",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/drive_mode",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/ratchet_toggle",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/recenter",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/spare_1",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/spare_2",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/spare_3",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/finger",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/mvrc_b/in/fist",
+      "requirement": "optional",
+      "type": "boolean"
+    }
+  ],
+  "action_sets": [
+    {
+      "name": "/actions/mvrc",
+      "usage": "leftright"
+    },
+    {
+      "name": "/actions/mvrc_b",
+      "usage": "leftright"
+    }
+  ],
+  "localization": [
+    {
+      "language_tag": "en_us",
+      "/actions/mvrc": "Main Controls",
+      "/actions/mvrc_b": "Secondary Controls (Used when holding B)",
+      "/actions/mvrc/in/interact_right": "Right Hand Interact",
+      "/actions/mvrc/in/interact_left": "Left Hand Interact",
+      "/actions/mvrc/in/grab_right": "Right Hand Grab",
+      "/actions/mvrc/in/grab_left": "Left Hand Grab",
+      "/actions/mvrc/in/jump": "Jump",
+      "/actions/mvrc/in/crouch": "Crouch",
+      "/actions/mvrc/in/sprint": "Sprint",
+      "/actions/mvrc/in/tool_mode": "Toggle Tool Mode",
+      "/actions/mvrc/in/b_held": "Enter Secondary Mode",
+      "/actions/mvrc/in/turn": "Turn / Look",
+      "/actions/mvrc/in/move": "Move",
+      "/actions/mvrc_b/in/b_held": "Exit Secondary Mode (By releasing B)",
+      "/actions/mvrc_b/in/menu": "Open/Close Menu",
+      "/actions/mvrc_b/in/right_click_right": "Right Hand Secondary Click",
+      "/actions/mvrc_b/in/right_click_left": "Left Hand Secondary Click",
+      "/actions/mvrc_b/in/laser_right": "Right Hand Laser Pointer",
+      "/actions/mvrc_b/in/laser_left": "Left Hand Laser Pointer",
+      "/actions/mvrc_b/in/drive_mode": "Toggle Drive Mode",
+      "/actions/mvrc_b/in/ratchet_toggle": "Toggle Ratchet Direction",
+      "/actions/mvrc_b/in/recenter": "Recenter View",
+      "/actions/mvrc_b/in/spare_1": "Spare Action 1(Not implemented yet)",
+      "/actions/mvrc_b/in/spare_2": "Spare Action 2(Not implemented yet)",
+      "/actions/mvrc_b/in/spare_3": "Spare Action 3(Not implemented yet)",
+      "/actions/mvrc_b/in/finger": "Finger Point Gesture",
+      "/actions/mvrc_b/in/fist": "Fist Gesture"
+    }
+  ]
+}
